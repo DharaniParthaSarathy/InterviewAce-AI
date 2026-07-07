@@ -454,6 +454,24 @@ assets/report.png
 
 ---
 
+# 🚀 Future Scope
+
+The following enhancements are planned for future versions of InterviewAce AI:
+
+- 📱 Mobile Application (Flutter)
+- ☁ Cloud Deployment (AWS / Azure / GCP)
+- 🔐 User Authentication & Dashboard
+- 💻 Coding Interview Assessment
+- 🎙 Speech-to-Text Interview Evaluation
+- 🌍 Multilingual Interview Support
+- 💼 LinkedIn Profile Analysis
+- 🔗 Job Portal Integration
+- 📊 Interview Performance Analytics
+- 🧠 Personalized AI Career Roadmaps
+- 📂 Resume Version History
+- 🤝 Recruiter Feedback Dashboard
+
+
 # 👨‍💻 Author
 
 **Dharani Partha Sarathy**
