@@ -6,44 +6,45 @@ from utils.langchain.chain import run_question_chain
 def interview_question_agent(
     state: InterviewAceState
 ) -> InterviewAceState:
-
     """
     Interview Question Agent
 
     Responsibilities
     ----------------
-    1. Read the retrieved resume context.
-    2. Generate interview questions.
-    3. Update the shared LangGraph state.
+    1. Read retrieved resume context.
+    2. Read uploaded Job Description.
+    3. Generate:
+        - Technical Questions
+        - Project Questions
+        - HR Questions
+        - Job Description Specific Questions
+    4. Update shared LangGraph state.
     """
 
     print("\n========== Interview Question Agent ==========\n")
 
     try:
 
-        # ---------------------------------------------
-        # Read State
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Read Shared State
+        # -------------------------------------------------
 
-        context = state["context"]
+        context = state.get("context", "")
 
-        job_description = state["job_description"]
+        job_description = state.get("job_description", "")
 
-        # ---------------------------------------------
-        # Generate Questions
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Generate Interview Questions
+        # -------------------------------------------------
 
         questions = run_question_chain(
-
             context=context,
-
             job_description=job_description
-
         )
 
-        # ---------------------------------------------
-        # Update State
-        # ---------------------------------------------
+        # -------------------------------------------------
+        # Update LangGraph State
+        # -------------------------------------------------
 
         state["interview_questions"] = questions
 
@@ -51,7 +52,10 @@ def interview_question_agent(
 
         state["workflow_status"] = "RUNNING"
 
-        print("Interview Questions Generated Successfully")
+        print("✓ Technical Questions Generated")
+        print("✓ Project Questions Generated")
+        print("✓ HR Questions Generated")
+        print("✓ Job Description Specific Questions Generated")
 
     except Exception as e:
 
@@ -59,7 +63,7 @@ def interview_question_agent(
 
         state["errors"].append(str(e))
 
-        print(f"Interview Question Agent Failed : {e}")
+        print(f"❌ Interview Question Agent Failed: {e}")
 
     print("\n==============================================\n")
 

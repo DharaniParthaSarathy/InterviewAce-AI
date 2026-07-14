@@ -6,11 +6,11 @@ from langchain_core.prompts import PromptTemplate
 
 analysis_prompt = PromptTemplate.from_template(
 """
-You are an expert AI recruiter.
+You are an expert AI Recruiter and Resume Screening Specialist.
 
-Analyze the candidate's resume against the Job Description.
+Analyze the candidate's resume against the provided Job Description.
 
-Use ONLY the provided Resume Context.
+Use ONLY the Resume Context provided below.
 
 ==============================
 Resume Context
@@ -24,21 +24,26 @@ Job Description
 
 {job_description}
 
-Provide the following:
+Provide the following sections:
 
-1. Match Score (0-100%)
+## Match Score
+(Give a percentage from 0-100%)
 
-2. Matched Skills
+## Overall Summary
 
-3. Missing Skills
+## Matched Skills
 
-4. Candidate Strengths
+## Missing Skills
 
-5. Candidate Weaknesses
+## Candidate Strengths
 
-6. Final Recommendation
+## Candidate Weaknesses
 
-Return the answer in professional markdown.
+## ATS Improvement Suggestions
+
+## Final Recommendation
+
+Return the answer in professional Markdown format.
 """
 )
 
@@ -50,7 +55,7 @@ optimizer_prompt = PromptTemplate.from_template(
 """
 You are an ATS Resume Optimization Expert.
 
-Rewrite the resume using ONLY the provided Resume Context.
+Rewrite the resume using ONLY the Resume Context.
 
 ==============================
 Resume Context
@@ -67,24 +72,18 @@ Job Description
 Rules
 
 • Never invent experience.
-
-• Never invent projects.
-
-• Never invent certifications.
-
 • Never invent companies.
-
-• Never invent skills.
-
-• Improve ATS keywords.
-
-• Improve grammar.
-
+• Never invent projects.
+• Never invent certifications.
+• Never invent technical skills.
+• Never exaggerate achievements.
+• Improve ATS keyword matching.
 • Improve formatting.
+• Improve grammar.
+• Improve readability.
+• Preserve factual accuracy.
 
-• Keep every fact truthful.
-
-Return the COMPLETE optimized resume.
+Return the COMPLETE ATS-optimized resume in Markdown.
 """
 )
 
@@ -98,7 +97,7 @@ You are an AI Career Coach.
 
 Compare the Resume Context with the Job Description.
 
-Use ONLY the provided context.
+Use ONLY the provided information.
 
 ==============================
 Resume Context
@@ -112,31 +111,23 @@ Job Description
 
 {job_description}
 
-Return in EXACTLY this format.
+Return the following sections.
 
-Overall Skill Gap
+## Overall Skill Gap
 
-<summary>
+## Matching Skills
 
-Missing Skills
+## Missing Skills
 
-- Skill 1
-- Skill 2
-- Skill 3
+## Recommended Skills
 
-Recommended Skills
+## Learning Roadmap
 
-- Skill A
-- Skill B
-- Skill C
+## Priority Technologies
 
-Learning Roadmap
+## Final Advice
 
-1.
-2.
-3.
-
-Final Advice
+Return professional Markdown.
 """
 )
 
@@ -146,47 +137,176 @@ Final Advice
 
 question_prompt = PromptTemplate.from_template(
 """
-You are a Senior Technical Interviewer.
+You are a Senior Technical Interviewer with experience in hiring software engineers, AI engineers, and data scientists.
 
-Generate interview questions using ONLY the Resume Context.
+Your task is to generate interview questions based on BOTH:
 
-==============================
+1. Resume Context
+2. Job Description
+
+Use ONLY the information provided below.
+
+==================================================
 Resume Context
-==============================
+==================================================
 
 {context}
 
-==============================
+==================================================
 Job Description
-==============================
+==================================================
 
 {job_description}
 
-Generate
+--------------------------------------------------
+Step 1 : Analyze the Job Description
+--------------------------------------------------
 
-## Technical Questions
-5 questions
+Identify:
 
-## Project Questions
-5 questions
+• Required Skills
+• Required Programming Languages
+• Frameworks
+• Libraries
+• Databases
+• Cloud Platforms
+• AI / ML Technologies
+• Responsibilities
+• Preferred Qualifications
+• Soft Skills
 
-## Behavioural Questions
-5 questions
+--------------------------------------------------
+Step 2 : Generate Interview Questions
+--------------------------------------------------
 
-## HR Questions
-5 questions
+Generate the following sections.
 
-Questions should evaluate
+# Technical Questions
+Generate 5 technical interview questions based on BOTH the Resume and Job Description.
 
-• Technical knowledge
+# Project Questions
+Generate 5 project-specific questions based on the candidate's resume projects.
 
-• Project understanding
+# Behavioural Questions
+Generate 5 behavioural questions.
 
-• Problem solving
+# HR Questions
+Generate 5 HR interview questions.
 
-• Communication
+# Job Description Specific Questions
+Carefully analyze the Job Description and generate 5 interview questions specifically targeting:
 
-Return ONLY the questions.
+• Technologies
+• Tools
+• Frameworks
+• Libraries
+• Responsibilities
+• Domain Knowledge
+
+These questions should evaluate whether the candidate satisfies the Job Description.
+
+--------------------------------------------------
+Rules
+--------------------------------------------------
+
+Questions should evaluate:
+
+• Technical Knowledge
+• Practical Implementation
+• Problem Solving
+• Communication Skills
+• Project Understanding
+• Domain Knowledge
+
+Return the response in the EXACT format below.
+
+# Job Description Analysis
+
+## Required Skills
+
+-
+
+-
+
+-
+
+## Technologies
+
+-
+
+-
+
+-
+
+## Responsibilities
+
+-
+
+-
+
+-
+
+# Technical Questions
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
+# Project Questions
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
+# Behavioural Questions
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
+# HR Questions
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
+# Job Description Specific Questions
+
+1.
+
+2.
+
+3.
+
+4.
+
+5.
+
+Return ONLY the interview preparation content.
 """
 )
 
@@ -206,21 +326,25 @@ Candidate Answer
 
 {answer}
 
-Evaluate the answer using
+Evaluate the answer using the following criteria.
 
-1. Technical Accuracy
+## Technical Accuracy
 
-2. Completeness
+## Completeness
 
-3. Communication
+## Communication
 
-4. Confidence
+## Confidence
 
-5. Suggestions for Improvement
+## Strengths
 
-6. Final Score (0-100)
+## Weaknesses
 
-Return professional feedback.
+## Suggestions for Improvement
+
+## Final Score (0-100)
+
+Return professional feedback in Markdown.
 """
 )
 
@@ -246,24 +370,24 @@ Job Description
 
 {job_description}
 
-Provide
+Provide the following.
 
-1. Overall Career Assessment
+## Overall Career Assessment
 
-2. Should the candidate apply now?
+## Should the Candidate Apply?
 
-3. Skills to learn immediately
+## Skills to Learn Immediately
 
-4. Recommended Certifications
+## Recommended Certifications
 
-5. Recommended Projects
+## Recommended Projects
 
-6. 3-Month Learning Roadmap
+## 3-Month Learning Roadmap
 
-7. Interview Preparation Tips
+## Interview Preparation Tips
 
-8. Final Career Advice
+## Final Career Advice
 
-Return the answer professionally.
+Return professional Markdown.
 """
 )

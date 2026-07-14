@@ -14,18 +14,18 @@ Tech Stack
 • RAG
 
 Workflow
-
-Upload Resume
-      ↓
-Analyze Resume
+--------
+Resume Upload
       ↓
 Resume Analysis
-ATS Resume
-Skill Gap
-Career Coach
-Interview Questions
       ↓
-Candidate Answer / Voice Answer
+ATS Resume
+      ↓
+Skill Gap Analysis
+      ↓
+Career Coach
+      ↓
+Interview Preparation
       ↓
 Interview Evaluation
       ↓
@@ -37,11 +37,9 @@ import os
 import tempfile
 
 import streamlit as st
-
 from streamlit_mic_recorder import mic_recorder
 
 from workflow import run_interviewace_workflow
-
 from utils.pdf_report import generate_resume_pdf
 
 # ==========================================================
@@ -49,15 +47,10 @@ from utils.pdf_report import generate_resume_pdf
 # ==========================================================
 
 st.set_page_config(
-
     page_title="InterviewAce AI",
-
     page_icon="🎯",
-
     layout="wide",
-
     initial_sidebar_state="expanded"
-
 )
 
 # ==========================================================
@@ -79,6 +72,14 @@ if "candidate_answer" not in st.session_state:
 if "voice_transcript" not in st.session_state:
     st.session_state.voice_transcript = ""
 
+# -------- New States --------
+
+if "jd_analysis" not in st.session_state:
+    st.session_state.jd_analysis = ""
+
+if "jd_questions" not in st.session_state:
+    st.session_state.jd_questions = ""
+
 # ==========================================================
 # Sidebar
 # ==========================================================
@@ -89,9 +90,9 @@ with st.sidebar:
 
     st.markdown(
         """
-AI-Powered Interview Preparation
+### 🚀 AI Interview Preparation Platform
 
-### Features
+#### Features
 
 ✅ Resume Analysis
 
@@ -101,20 +102,54 @@ AI-Powered Interview Preparation
 
 ✅ Career Coach
 
-✅ Interview Questions
+✅ Interview Preparation
 
-✅ Voice Interview
+✅ Job Description Analysis
 
-✅ AI Evaluation
+✅ JD Specific Questions
 
-✅ PDF Report
+✅ Voice Mock Interview
+
+✅ AI Answer Evaluation
+
+✅ PDF Report Generation
 """
     )
 
     st.markdown("---")
 
     st.info(
-        "Upload your resume, paste the Job Description and click **Analyze Resume**."
+        """
+Upload your Resume
+
+Paste the Job Description
+
+Click **Analyze Resume**
+
+InterviewAce AI will generate:
+
+• Resume Analysis
+
+• ATS Resume
+
+• Skill Gap
+
+• Career Advice
+
+• Technical Questions
+
+• Project Questions
+
+• Behavioural Questions
+
+• HR Questions
+
+• Job Description Analysis
+
+• Job Description Specific Questions
+
+• AI Evaluation
+"""
     )
 
 # ==========================================================
@@ -124,7 +159,7 @@ AI-Powered Interview Preparation
 st.title("🎯 InterviewAce AI")
 
 st.caption(
-    "AI Resume Analysis • ATS Optimization • Skill Gap Analysis • Career Coach • Interview Preparation"
+    "Multi-Agent LLM & RAG-Based Intelligent Interview Preparation Platform"
 )
 
 st.markdown("---")
@@ -136,11 +171,8 @@ st.markdown("---")
 st.header("📄 Resume Upload")
 
 uploaded_resume = st.file_uploader(
-
     "Upload Resume (PDF)",
-
     type=["pdf"]
-
 )
 
 # ==========================================================
@@ -150,13 +182,23 @@ uploaded_resume = st.file_uploader(
 st.header("💼 Job Description")
 
 job_description = st.text_area(
-
     "Paste the complete Job Description",
+    height=260,
+    placeholder="""
+Paste the complete Job Description here...
 
-    height=280,
+Example:
 
-    placeholder="Paste the complete Job Description here..."
-
+Python
+Machine Learning
+LangChain
+Docker
+FastAPI
+AWS
+SQL
+Communication Skills
+Problem Solving
+"""
 )
 
 st.markdown("---")
@@ -166,15 +208,12 @@ st.markdown("---")
 # ==========================================================
 
 analyze_clicked = st.button(
-
     "🚀 Analyze Resume",
-
     use_container_width=True
-
 )
 
 # ==========================================================
-# Run InterviewAce Workflow
+# Run Complete Workflow
 # ==========================================================
 
 if analyze_clicked:
@@ -185,7 +224,7 @@ if analyze_clicked:
 
     if uploaded_resume is None:
 
-        st.warning("⚠ Please upload your resume.")
+        st.warning("⚠ Please upload your Resume.")
 
         st.stop()
 
@@ -200,11 +239,8 @@ if analyze_clicked:
     # ------------------------------------------------------
 
     with tempfile.NamedTemporaryFile(
-
         delete=False,
-
         suffix=".pdf"
-
     ) as tmp_file:
 
         tmp_file.write(uploaded_resume.read())
@@ -214,47 +250,35 @@ if analyze_clicked:
     st.session_state.resume_path = resume_path
 
     # ------------------------------------------------------
-    # Run Complete Workflow
+    # Run LangGraph Workflow
     # ------------------------------------------------------
 
     with st.spinner(
-
         "🤖 InterviewAce AI is analyzing your resume..."
-
     ):
 
         try:
 
             final_state = run_interviewace_workflow(
-
                 resume_path=resume_path,
-
                 job_description=job_description,
-
                 candidate_answer=""
-
             )
 
             st.session_state.final_state = final_state
-
             st.session_state.analysis_completed = True
 
             st.success(
-
                 "✅ Resume Analysis Completed Successfully!"
-
             )
 
         except Exception as e:
 
             st.error(
-
                 f"❌ Workflow Failed\n\n{e}"
-
             )
 
             st.stop()
-
 
 # ==========================================================
 # Wait Until Workflow Completes
@@ -263,69 +287,54 @@ if analyze_clicked:
 if not st.session_state.analysis_completed:
 
     st.info(
-
         "👆 Upload your Resume, paste the Job Description and click **Analyze Resume**."
-
     )
 
     st.stop()
 
-
 # ==========================================================
-# Retrieve Final Workflow State
+# Retrieve Final State
 # ==========================================================
 
 state = st.session_state.final_state
 
 st.markdown("---")
 
-
 # ==========================================================
 # Create Professional Tabs
 # ==========================================================
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
-
     [
-
         "📊 Analysis",
-
         "✨ ATS Resume",
-
         "📈 Skills & Career",
-
         "🎯 Interview",
-
         "📄 Reports"
-
     ]
-
 )
-
 # ==========================================================
 # 📊 TAB 1 : Resume Analysis
 # ==========================================================
 
 with tab1:
 
-    st.header("📊 Resume Analysis")
+    st.header("📊 AI Resume Analysis")
 
     # ------------------------------------------------------
     # Resume Preview
     # ------------------------------------------------------
 
     with st.expander(
-
         "📄 View Extracted Resume",
-
         expanded=False
-
     ):
 
         st.text(
-
-            state["resume_text"]
-
+            state.get(
+                "resume_text",
+                "Resume text not available."
+            )
         )
 
     st.markdown("---")
@@ -335,158 +344,187 @@ with tab1:
     # ------------------------------------------------------
 
     match_score = float(
-
         state.get(
-
             "match_score",
-
             0
-
         )
-
     )
 
-    col1, col2 = st.columns(
-
-        [1, 3]
-
-    )
+    col1, col2 = st.columns([1, 3])
 
     with col1:
 
         st.metric(
-
             "ATS Match Score",
-
-            f"{match_score:.2f}%"
-
+            f"{match_score:.1f}%"
         )
 
     with col2:
 
-        if match_score >= 85:
+        if match_score >= 90:
 
             st.success(
-
-                "Excellent Resume Match ✅"
-
+                "🌟 Outstanding Match! Your resume is highly aligned with the Job Description."
             )
 
-        elif match_score >= 70:
+        elif match_score >= 75:
 
             st.info(
-
-                "Good Resume Match 👍"
-
+                "👍 Good Match! Minor improvements can further strengthen your resume."
             )
 
-        elif match_score >= 50:
+        elif match_score >= 60:
 
             st.warning(
-
-                "Average Resume Match ⚠"
-
+                "⚠ Moderate Match. Consider improving your resume before applying."
             )
 
         else:
 
             st.error(
-
-                "Low Resume Match ❌"
-
+                "❌ Low Match. Significant improvements are recommended."
             )
 
     st.progress(
-
-        min(
-
-            match_score / 100,
-
-            1.0
-
-        )
-
+        min(match_score / 100, 1.0)
     )
 
     st.markdown("---")
 
     # ------------------------------------------------------
-    # Resume Analysis
+    # AI Resume Analysis
     # ------------------------------------------------------
 
-    st.subheader(
-
-        "🤖 AI Resume Analysis"
-
-    )
+    st.subheader("🤖 AI Resume Analysis")
 
     analysis = state.get(
-
         "analysis",
-
         ""
-
     )
 
     if analysis:
 
         st.markdown(
-
             analysis
-
         )
 
     else:
 
         st.warning(
-
-            "Resume analysis not available."
-
+            "Resume Analysis is not available."
         )
 
     st.markdown("---")
 
     # ------------------------------------------------------
-    # Quick Summary
+    # Resume Readiness
     # ------------------------------------------------------
 
-    st.subheader(
+    st.subheader("📌 Resume Readiness")
 
-        "📌 Summary"
-
-    )
-
-    if match_score >= 85:
+    if match_score >= 90:
 
         st.success(
+            """
+Your resume is highly optimized for this role.
 
-            "Your resume is highly aligned with the Job Description."
+✔ Strong ATS compatibility
 
+✔ Excellent skill alignment
+
+✔ Ready for submission
+"""
         )
 
-    elif match_score >= 70:
+    elif match_score >= 75:
 
         st.info(
+            """
+Your resume is competitive.
 
-            "Your resume is a good match. Minor improvements are recommended."
+Recommended improvements:
 
+• Add more JD keywords
+
+• Quantify achievements
+
+• Improve project descriptions
+"""
         )
 
-    elif match_score >= 50:
+    elif match_score >= 60:
 
         st.warning(
+            """
+Your resume needs improvement.
 
-            "Your resume needs optimization before applying."
+Focus on:
 
+• Missing technical skills
+
+• Better ATS keywords
+
+• Stronger project descriptions
+"""
         )
 
     else:
 
         st.error(
+            """
+Your resume requires significant improvements.
 
-            "Consider improving your resume significantly for this role."
+Recommended:
 
+• Update technical skills
+
+• Improve ATS optimization
+
+• Add relevant projects
+
+• Tailor the resume to the Job Description
+"""
         )
+
+    st.markdown("---")
+
+    # ------------------------------------------------------
+    # Resume Statistics
+    # ------------------------------------------------------
+
+    st.subheader("📈 Resume Overview")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "Resume Status",
+            "Analyzed"
+        )
+
+    with col2:
+
+        st.metric(
+            "Job Match",
+            f"{match_score:.0f}%"
+        )
+
+    with col3:
+
+        if match_score >= 75:
+
+            st.metric(
+                "Recommendation",
+                "Apply ✅"
+            )
+
+        else:
+
+            st.metric(
+                "Recommendation",
+                "Improve ⚠"
+            )
 
 # ==========================================================
 # ✨ TAB 2 : ATS Optimized Resume
@@ -497,70 +535,55 @@ with tab2:
     st.header("✨ ATS Optimized Resume")
 
     optimized_resume = state.get(
-
         "optimized_resume",
-
         ""
-
     )
 
     # ------------------------------------------------------
-    # Optimized Resume Preview
+    # ATS Optimized Resume
     # ------------------------------------------------------
 
     if optimized_resume:
 
         with st.expander(
-
-            "📄 View Optimized Resume",
-
+            "📄 View ATS Optimized Resume",
             expanded=True
-
         ):
 
             st.markdown(
-
                 optimized_resume
-
             )
 
     else:
 
         st.warning(
-
-            "Optimized resume not available."
-
+            "ATS Optimized Resume not available."
         )
 
     st.markdown("---")
 
     # ------------------------------------------------------
-    # Download Optimized Resume
+    # Download ATS Resume
     # ------------------------------------------------------
 
     if optimized_resume:
 
         resume_pdf = generate_resume_pdf(
-
             optimized_resume
-
         )
 
         with open(
-
             resume_pdf,
-
             "rb"
-
         ) as pdf:
 
             st.download_button(
 
-                label="📥 Download Optimized Resume",
+                label="📥 Download ATS Optimized Resume",
 
                 data=pdf,
 
-                file_name="Optimized_Resume.pdf",
+                file_name="ATS_Optimized_Resume.pdf",
 
                 mime="application/pdf",
 
@@ -571,84 +594,149 @@ with tab2:
     st.markdown("---")
 
     # ------------------------------------------------------
-    # ATS Resume Tips
+    # ATS Resume Checklist
     # ------------------------------------------------------
 
-    st.subheader("💡 ATS Optimization Tips")
+    st.subheader("✅ ATS Resume Checklist")
 
-    tips = [
+    checklist = [
 
-        "✅ Include keywords from the Job Description.",
+        "✔ Professional Summary aligned with the Job Description",
 
-        "✅ Highlight measurable achievements.",
+        "✔ Relevant technical keywords included",
 
-        "✅ Use standard section headings (Skills, Projects, Experience).",
+        "✔ Skills section optimized",
 
-        "✅ Keep formatting ATS-friendly (avoid tables and excessive graphics).",
+        "✔ Projects highlight measurable impact",
 
-        "✅ Quantify project outcomes whenever possible.",
+        "✔ Resume follows ATS-friendly formatting",
 
-        "✅ Keep technical skills updated and relevant.",
+        "✔ No tables, graphics or complex layouts",
 
-        "✅ Tailor your resume for each application."
+        "✔ Experience written using action verbs",
+
+        "✔ Important technologies emphasized",
+
+        "✔ Resume customized for this specific role"
 
     ]
 
-    for tip in tips:
+    for item in checklist:
 
-        st.write(tip)
+        st.write(item)
 
     st.markdown("---")
 
     # ------------------------------------------------------
-    # Resume Improvement Status
+    # ATS Resume Tips
     # ------------------------------------------------------
 
-    st.subheader("📈 Resume Improvement Status")
+    st.subheader("💡 AI Suggestions")
 
-    match_score = float(
+    st.info(
 
-        state.get(
+        """
+### Improve your ATS Score by:
 
-            "match_score",
+• Matching keywords from the Job Description
 
-            0
+• Quantifying achievements with numbers
 
-        )
+• Using action verbs
+
+• Highlighting relevant projects
+
+• Mentioning tools and frameworks required for the role
+
+• Keeping formatting simple and ATS-friendly
+
+• Tailoring every application instead of using one generic resume
+        """
 
     )
 
-    if match_score >= 85:
+    st.markdown("---")
+
+    # ------------------------------------------------------
+    # ATS Readiness Meter
+    # ------------------------------------------------------
+
+    st.subheader("📈 ATS Resume Readiness")
+
+    match_score = float(
+        state.get(
+            "match_score",
+            0
+        )
+    )
+
+    st.progress(
+        min(match_score / 100, 1.0)
+    )
+
+    if match_score >= 90:
 
         st.success(
-
-            "🎉 Your resume is well optimized for ATS."
-
+            "🌟 Excellent! Your resume is highly optimized for Applicant Tracking Systems."
         )
 
-    elif match_score >= 70:
+    elif match_score >= 75:
 
         st.info(
-
-            "👍 Your resume is good. A few improvements can increase your ATS score."
-
+            "👍 Good ATS compatibility. Minor improvements can increase your chances."
         )
 
-    elif match_score >= 50:
+    elif match_score >= 60:
 
         st.warning(
-
-            "⚠ Resume needs moderate optimization."
-
+            "⚠ Moderate ATS compatibility. Resume optimization is recommended."
         )
 
     else:
 
         st.error(
-
-            "❌ Resume requires significant improvement before applying."
-
+            "❌ Low ATS compatibility. Consider updating your resume before applying."
         )
+
+    st.markdown("---")
+
+    # ------------------------------------------------------
+    # ATS Resume Summary
+    # ------------------------------------------------------
+
+    st.subheader("📌 ATS Summary")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "Resume",
+            "Optimized"
+        )
+
+    with col2:
+
+        st.metric(
+            "ATS Score",
+            f"{match_score:.0f}%"
+        )
+
+    with col3:
+
+        if match_score >= 75:
+
+            st.metric(
+                "Status",
+                "Ready ✅"
+            )
+
+        else:
+
+            st.metric(
+                "Status",
+                "Improve ⚠"
+            )
 
 # ==========================================================
 # 📈 TAB 3 : Skills & Career
@@ -659,57 +747,44 @@ with tab3:
     st.header("📈 Skills & Career")
 
     # ======================================================
-    # ATS Skill Gap Analysis
+    # Skill Gap Analysis
     # ======================================================
 
-    st.subheader("📊 ATS Skill Gap Analysis")
+    st.subheader("📊 AI Skill Gap Analysis")
 
     skill_gap = state.get(
-
         "skill_gap",
-
         ""
-
     )
 
     if skill_gap:
 
         st.markdown(
-
             skill_gap
-
         )
 
     else:
 
         st.info(
-
             "Skill Gap Analysis not available."
-
         )
 
     st.markdown("---")
 
     # ======================================================
-    # Missing & Recommended Skills
+    # Missing Skills & Recommended Skills
     # ======================================================
 
     st.subheader("🛠 Skills Overview")
 
     missing_skills = state.get(
-
         "missing_skills",
-
         []
-
     )
 
     recommended_skills = state.get(
-
         "recommended_skills",
-
         []
-
     )
 
     col1, col2 = st.columns(2)
@@ -726,14 +801,12 @@ with tab3:
 
             for skill in missing_skills:
 
-                st.write(f"• {skill}")
+                st.error(f"• {skill}")
 
         else:
 
             st.success(
-
-                "No missing skills detected."
-
+                "No major missing skills detected."
             )
 
     # ------------------------------------------------------
@@ -748,14 +821,12 @@ with tab3:
 
             for skill in recommended_skills:
 
-                st.write(f"• {skill}")
+                st.success(f"• {skill}")
 
         else:
 
             st.info(
-
-                "No additional recommendations."
-
+                "No additional recommendations available."
             )
 
     st.markdown("---")
@@ -767,60 +838,106 @@ with tab3:
     st.subheader("📚 Personalized Learning Roadmap")
 
     roadmap = state.get(
-
         "learning_roadmap",
-
         ""
-
     )
 
     if roadmap:
 
         st.markdown(
-
             roadmap
-
         )
 
     else:
 
         st.info(
-
             "Learning roadmap not generated."
-
         )
 
     st.markdown("---")
 
     # ======================================================
-    # Career Coach
+    # AI Career Coach
     # ======================================================
 
     st.subheader("👨‍💼 AI Career Coach")
 
     career_advice = state.get(
-
         "career_advice",
-
         ""
-
     )
 
     if career_advice:
 
         st.markdown(
-
             career_advice
-
         )
 
     else:
 
         st.info(
-
             "Career advice not available."
-
         )
+
+    st.markdown("---")
+
+    # ======================================================
+    # Certifications Recommendation
+    # ======================================================
+
+    st.subheader("🎓 Suggested Certifications")
+
+    certifications = [
+
+        "Google Professional Machine Learning Engineer",
+
+        "Microsoft Azure AI Engineer Associate",
+
+        "AWS Certified Machine Learning",
+
+        "DeepLearning.AI Generative AI Specialization",
+
+        "TensorFlow Developer Certificate",
+
+        "LangChain for LLM Application Development"
+
+    ]
+
+    for cert in certifications:
+
+        st.write(f"• {cert}")
+
+    st.markdown("---")
+
+    # ======================================================
+    # Recommended Future Projects
+    # ======================================================
+
+    st.subheader("🚀 Suggested AI Projects")
+
+    projects = [
+
+        "Multi-Agent AI Systems",
+
+        "LLM Applications using LangGraph",
+
+        "Retrieval-Augmented Generation (RAG)",
+
+        "AI Chatbot with Memory",
+
+        "Medical AI using Computer Vision",
+
+        "AI Document Assistant",
+
+        "Speech-to-Text AI Applications",
+
+        "Autonomous AI Agents"
+
+    ]
+
+    for project in projects:
+
+        st.write(f"• {project}")
 
     st.markdown("---")
 
@@ -831,118 +948,301 @@ with tab3:
     st.subheader("🎯 Career Readiness")
 
     match_score = float(
-
         state.get(
-
             "match_score",
-
             0
-
         )
-
     )
 
-    if match_score >= 85:
+    st.progress(
+        min(match_score / 100, 1.0)
+    )
+
+    if match_score >= 90:
 
         st.success(
-
-            "🎉 You are highly prepared to apply for this role."
-
+            "🌟 Excellent! You are highly prepared for this role."
         )
 
-    elif match_score >= 70:
+    elif match_score >= 75:
 
         st.info(
-
-            "👍 You're close! A few improvements will strengthen your profile."
-
+            "👍 Good preparation. Minor improvements can strengthen your profile."
         )
 
-    elif match_score >= 50:
+    elif match_score >= 60:
 
         st.warning(
-
-            "⚠ Improve your resume and skills before applying."
-
+            "⚠ Improve your technical skills and resume before applying."
         )
 
     else:
 
         st.error(
-
-            "❌ Significant improvements are recommended before applying."
-
+            "❌ Significant upskilling is recommended before applying."
         )
 
+    st.markdown("---")
+
+    # ======================================================
+    # Career Dashboard
+    # ======================================================
+
+    st.subheader("📌 Career Summary")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "Career Readiness",
+            f"{match_score:.0f}%"
+        )
+
+    with col2:
+
+        if missing_skills:
+
+            st.metric(
+                "Missing Skills",
+                str(len(missing_skills))
+            )
+
+        else:
+
+            st.metric(
+                "Missing Skills",
+                "0"
+            )
+
+    with col3:
+
+        if match_score >= 75:
+
+            st.metric(
+                "Recommendation",
+                "Apply ✅"
+            )
+
+        else:
+
+            st.metric(
+                "Recommendation",
+                "Upskill 📚"
+            )
+
 # ==========================================================
-# 🎯 TAB 4 : Interview Preparation
+# 🎯 TAB 4 : Interview Preparation (Part 5A)
 # ==========================================================
 
 with tab4:
 
     st.header("🎯 AI Interview Preparation")
 
-    # ======================================================
-    # Interview Questions
-    # ======================================================
-
-    st.subheader("📝 AI Generated Interview Questions")
-
     questions = state.get(
-
         "interview_questions",
-
         ""
-
     )
 
-    if questions:
+    if not questions:
 
-        st.markdown(
-
-            questions
-
+        st.warning(
+            "Interview questions not generated."
         )
 
     else:
 
-        st.warning(
+        # ======================================================
+        # Job Description Analysis (NEW)
+        # ======================================================
 
-            "Interview questions not generated."
+        st.subheader("📌 Job Description Analysis")
 
+        st.info(
+            """
+The following technologies, responsibilities and skills
+have been identified from the uploaded Job Description.
+These are used to generate personalized interview questions.
+"""
         )
 
-    st.markdown("---")
+        jd_analysis = ""
 
-    # ======================================================
+        if "# Technical Questions" in questions:
+
+            jd_analysis = questions.split(
+                "# Technical Questions"
+            )[0]
+
+        else:
+
+            jd_analysis = questions
+
+        st.markdown(jd_analysis)
+
+        st.markdown("---")
+
+        # ======================================================
+        # Technical Questions
+        # ======================================================
+
+        technical_questions = ""
+
+        if "# Project Questions" in questions:
+
+            technical_questions = questions.split(
+                "# Technical Questions"
+            )[1].split(
+                "# Project Questions"
+            )[0]
+
+        st.subheader("💻 Technical Questions")
+
+        st.markdown(
+            technical_questions
+        )
+
+        st.markdown("---")
+
+        # ======================================================
+        # Project Questions
+        # ======================================================
+
+        project_questions = ""
+
+        if "# Behavioural Questions" in questions:
+
+            project_questions = questions.split(
+                "# Project Questions"
+            )[1].split(
+                "# Behavioural Questions"
+            )[0]
+
+        st.subheader("📂 Project Questions")
+
+        st.markdown(
+            project_questions
+        )
+
+        st.markdown("---")
+
+        # ======================================================
+        # Behavioural Questions
+        # ======================================================
+
+        behavioural_questions = ""
+
+        if "# HR Questions" in questions:
+
+            behavioural_questions = questions.split(
+                "# Behavioural Questions"
+            )[1].split(
+                "# HR Questions"
+            )[0]
+
+        st.subheader("🧠 Behavioural Questions")
+
+        st.markdown(
+            behavioural_questions
+        )
+
+        st.markdown("---")
+
+        # ======================================================
+        # HR Questions
+        # ======================================================
+
+        hr_questions = ""
+
+        if "# Job Description Specific Questions" in questions:
+
+            hr_questions = questions.split(
+                "# HR Questions"
+            )[1].split(
+                "# Job Description Specific Questions"
+            )[0]
+
+        else:
+
+            hr_questions = questions.split(
+                "# HR Questions"
+            )[1]
+
+        st.subheader("👨‍💼 HR Questions")
+
+        st.markdown(
+            hr_questions
+        )
+
+        st.markdown("---")
+
+        # ======================================================
+        # Job Description Specific Questions (NEW)
+        # ======================================================
+
+        if "# Job Description Specific Questions" in questions:
+
+            jd_questions = questions.split(
+                "# Job Description Specific Questions"
+            )[1]
+
+            st.subheader(
+                "🎯 Job Description Specific Questions"
+            )
+
+            st.success(
+                """
+These questions are generated directly from the uploaded
+Job Description and evaluate whether your skills match
+the employer's expectations.
+"""
+            )
+
+            st.markdown(
+                jd_questions
+            )
+
+            st.markdown("---")
+            # ======================================================
     # Candidate Answer
     # ======================================================
 
-    st.subheader("✍ Type Your Answer")
+    st.header("✍️ Your Answer")
 
     candidate_answer = st.text_area(
 
-        "Answer one of the above interview questions.",
+        "Type your interview answer below",
+
+        value=st.session_state.candidate_answer,
 
         height=220,
 
-        key="candidate_answer"
+        placeholder="""
+Type your answer here...
 
+Tips:
+
+• Explain your approach clearly.
+
+• Mention technologies used.
+
+• Discuss challenges.
+
+• Explain your solution.
+
+• Conclude with results.
+"""
     )
+
+    st.session_state.candidate_answer = candidate_answer
 
     st.markdown("---")
 
     # ======================================================
-    # Voice Recording
+    # Voice Recorder
     # ======================================================
 
     st.subheader("🎤 Voice Mock Interview")
-
-    st.info(
-
-        "Instead of typing, you may answer using your microphone."
-
-    )
 
     audio = mic_recorder(
 
@@ -950,77 +1250,45 @@ with tab4:
 
         stop_prompt="⏹ Stop Recording",
 
-        just_once=False,
-
-        use_container_width=True,
-
         key="voice_recorder"
 
     )
 
-    # ======================================================
-    # Speech to Text
-    # ======================================================
-
     if audio:
 
-        from utils.voice_interview import speech_to_text
+        st.success("✅ Voice Recorded Successfully")
 
-        with tempfile.NamedTemporaryFile(
+        st.audio(audio["bytes"])
 
-            delete=False,
+        st.info(
+            """
+Speech-to-text integration can be added using:
 
-            suffix=".wav"
+• OpenAI Whisper
 
-        ) as temp_audio:
+• Google Speech-to-Text
 
-            temp_audio.write(
-
-                audio["bytes"]
-
-            )
-
-            audio_path = temp_audio.name
-
-        with st.spinner(
-
-            "Converting speech to text..."
-
-        ):
-
-            transcript = speech_to_text(
-
-                audio_path
-
-            )
-
-        st.session_state.voice_transcript = transcript
-
-        st.success(
-
-            "Voice converted successfully."
-
+• Azure Speech Services
+"""
         )
 
+    st.markdown("---")
+
     # ======================================================
-    # Transcript
+    # Select Question
     # ======================================================
 
-    if st.session_state.voice_transcript:
+    st.subheader("📝 Interview Evaluation")
 
-        st.subheader("📝 Voice Transcript")
+    interview_question = st.text_area(
 
-        st.text_area(
+        "Paste the interview question you answered",
 
-            "",
+        height=120,
 
-            value=st.session_state.voice_transcript,
+        placeholder="Paste one interview question here..."
 
-            height=180,
-
-            disabled=True
-
-        )
+    )
 
     st.markdown("---")
 
@@ -1036,182 +1304,116 @@ with tab4:
 
     ):
 
-        # ---------------------------------------------
-        # Voice Answer gets higher priority
-        # ---------------------------------------------
+        if not interview_question.strip():
 
-        if st.session_state.voice_transcript:
+            st.warning(
 
-            state["text_answer"] = (
+                "Please enter the interview question."
 
-                st.session_state.voice_transcript
+            )
+
+        elif not candidate_answer.strip():
+
+            st.warning(
+
+                "Please type your answer first."
 
             )
 
         else:
 
-            state["text_answer"] = (
+            with st.spinner(
 
-                candidate_answer
+                "🤖 AI Interviewer is evaluating your answer..."
 
-            )
+            ):
 
-        # ---------------------------------------------
-        # Validation
-        # ---------------------------------------------
+                from utils.langchain.chain import (
+                    run_evaluation_chain
+                )
 
-        if state["text_answer"].strip() == "":
+                evaluation = run_evaluation_chain(
 
-            st.warning(
+                    question=interview_question,
 
-                "Please type an answer or record your voice."
+                    answer=candidate_answer
 
-            )
+                )
 
-            st.stop()
-
-        # ---------------------------------------------
-        # Run Evaluation Agent
-        # ---------------------------------------------
-
-        from langgraph_agents.interview_evaluation_agent import (
-
-            interview_evaluation_agent
-
-        )
-
-        with st.spinner(
-
-            "Evaluating your interview answer..."
-
-        ):
-
-            state = interview_evaluation_agent(
-
-                state
-
-            )
-
-        st.session_state.final_state = state
-
-        st.success(
-
-            "Interview evaluation completed."
-
-        )
-
-    st.markdown("---")
+                st.session_state.interview_feedback = evaluation
 
     # ======================================================
-    # Interview Evaluation
+    # Display Evaluation
     # ======================================================
 
-    st.subheader("📋 AI Interview Feedback")
+    if "interview_feedback" in st.session_state:
 
-    evaluation = state.get(
+        st.markdown("---")
 
-        "evaluation",
-
-        ""
-
-    )
-
-    if evaluation:
+        st.subheader("🤖 AI Interview Feedback")
 
         st.markdown(
 
-            evaluation
+            st.session_state.interview_feedback
 
         )
 
-    else:
+        st.markdown("---")
+
+        st.subheader("📊 Interview Performance")
 
         st.info(
+            """
+Evaluation includes
 
-            "Answer evaluation will appear here."
+✔ Technical Accuracy
+
+✔ Completeness
+
+✔ Communication
+
+✔ Confidence
+
+✔ Suggestions
+
+✔ Final Score
+"""
+        )
+
+        st.success(
+
+            "Keep practising to improve your interview performance!"
 
         )
 
     st.markdown("---")
 
     # ======================================================
-    # Interview Score
+    # Interview Tips
     # ======================================================
 
-    st.subheader("🏆 Interview Score")
+    st.subheader("💡 Interview Tips")
 
-    interview_score = float(
+    st.info(
+        """
+### During Technical Interviews
 
-        state.get(
+✔ Think aloud while solving problems.
 
-            "interview_score",
+✔ Explain your approach.
 
-            0
+✔ Mention trade-offs.
 
-        )
+✔ Use real project examples.
 
-    )
+✔ Highlight measurable achievements.
 
-    col1, col2 = st.columns(
+✔ Don't rush your answer.
 
-        [1, 3]
+✔ Ask clarifying questions when required.
 
-    )
-
-    with col1:
-
-        st.metric(
-
-            "Score",
-
-            f"{interview_score:.0f}/100"
-
-        )
-
-    with col2:
-
-        if interview_score >= 85:
-
-            st.success(
-
-                "Excellent Interview Performance 🌟"
-
-            )
-
-        elif interview_score >= 70:
-
-            st.info(
-
-                "Good Performance 👍"
-
-            )
-
-        elif interview_score >= 50:
-
-            st.warning(
-
-                "Average Performance ⚠"
-
-            )
-
-        else:
-
-            st.error(
-
-                "Needs Improvement ❌"
-
-            )
-
-    st.progress(
-
-        min(
-
-            interview_score / 100,
-
-            1.0
-
-        )
-
+✔ End with a concise summary.
+"""
     )
 
 # ==========================================================
@@ -1220,89 +1422,150 @@ with tab4:
 
 with tab5:
 
-    st.header("📄 Reports & Downloads")
+    st.header("📄 AI Reports")
 
     # ======================================================
-    # Download Complete Report
+    # Resume Analysis Report
     # ======================================================
 
-    report_path = state.get(
+    st.subheader("📊 Resume Analysis Report")
 
-        "report_path",
+    analysis = state.get("analysis", "")
 
-        ""
+    if analysis:
 
-    )
-
-    if report_path and os.path.exists(report_path):
-
-        with open(
-
-            report_path,
-
-            "rb"
-
-        ) as pdf:
-
-            st.download_button(
-
-                label="📥 Download Complete InterviewAce Report",
-
-                data=pdf,
-
-                file_name="InterviewAce_Report.pdf",
-
-                mime="application/pdf",
-
-                use_container_width=True
-
-            )
+        st.markdown(analysis)
 
     else:
 
-        st.info(
-
-            "Report not available."
-
-        )
+        st.info("Resume Analysis Report not available.")
 
     st.markdown("---")
 
     # ======================================================
-    # Download Optimized Resume
+    # ATS Resume Report
     # ======================================================
 
+    st.subheader("✨ ATS Optimized Resume")
+
     optimized_resume = state.get(
-
         "optimized_resume",
-
         ""
-
     )
 
     if optimized_resume:
 
-        optimized_resume_pdf = generate_resume_pdf(
+        st.markdown(optimized_resume)
 
-            optimized_resume
+    else:
+
+        st.info("ATS Resume not available.")
+
+    st.markdown("---")
+
+    # ======================================================
+    # Career Coach Report
+    # ======================================================
+
+    st.subheader("👨‍💼 Career Coach Report")
+
+    career = state.get(
+        "career_advice",
+        ""
+    )
+
+    if career:
+
+        st.markdown(career)
+
+    else:
+
+        st.info("Career Coach Report not available.")
+
+    st.markdown("---")
+
+    # ======================================================
+    # Skill Gap Report
+    # ======================================================
+
+    st.subheader("📈 Skill Gap Report")
+
+    skill_gap = state.get(
+        "skill_gap",
+        ""
+    )
+
+    if skill_gap:
+
+        st.markdown(skill_gap)
+
+    else:
+
+        st.info("Skill Gap Report not available.")
+
+    st.markdown("---")
+
+    # ======================================================
+    # Interview Questions Report
+    # ======================================================
+
+    st.subheader("🎯 Interview Preparation Report")
+
+    questions = state.get(
+        "interview_questions",
+        ""
+    )
+
+    if questions:
+
+        st.markdown(questions)
+
+    else:
+
+        st.info("Interview Questions not available.")
+
+    st.markdown("---")
+
+    # ======================================================
+    # Interview Evaluation Report
+    # ======================================================
+
+    if "interview_feedback" in st.session_state:
+
+        st.subheader("📝 Interview Evaluation Report")
+
+        st.markdown(
+
+            st.session_state.interview_feedback
 
         )
 
+        st.markdown("---")
+
+    # ======================================================
+    # Download ATS Resume
+    # ======================================================
+
+    st.subheader("📥 Downloads")
+
+    if optimized_resume:
+
+        pdf_file = generate_resume_pdf(
+            optimized_resume
+        )
+
         with open(
-
-            optimized_resume_pdf,
-
+            pdf_file,
             "rb"
-
-        ) as pdf:
+        ) as file:
 
             st.download_button(
 
-                label="📄 Download Optimized Resume",
+                label="📄 Download ATS Resume PDF",
 
-                data=pdf,
+                data=file,
 
-                file_name="Optimized_Resume.pdf",
+                file_name="ATS_Optimized_Resume.pdf",
 
                 mime="application/pdf",
 
@@ -1316,100 +1579,102 @@ with tab5:
     # Workflow Summary
     # ======================================================
 
-    st.subheader("⚙ Workflow Summary")
+    st.subheader("🔄 InterviewAce AI Workflow")
 
-    workflow_steps = [
-
-        "✅ Resume Uploaded",
-
-        "✅ Resume Parsed",
-
-        "✅ Resume Chunked",
-
-        "✅ Embeddings Generated",
-
-        "✅ FAISS Index Created",
-
-        "✅ RAG Context Retrieved",
-
-        "✅ Resume Analysis Completed",
-
-        "✅ Resume Optimization Completed",
-
-        "✅ Skill Gap Analysis Completed",
-
-        "✅ Career Coach Completed",
-
-        "✅ Interview Questions Generated",
-
-        "✅ Interview Evaluation Completed",
-
-        "✅ PDF Report Generated"
-
-    ]
-
-    for step in workflow_steps:
-
-        st.write(step)
+    st.markdown(
+        """
+        """
+    )
 
     st.markdown("---")
 
     # ======================================================
-    # Errors
+    # Technologies Used
     # ======================================================
 
-    errors = state.get(
+    st.subheader("🛠 Technologies Used")
 
-        "errors",
+    col1, col2 = st.columns(2)
 
-        []
+    with col1:
 
-    )
+        st.markdown(
+            """
+### AI
 
-    if errors:
+- Gemini 2.5 Flash
+- LangChain
+- LangGraph
+- RAG
+- Multi-Agent AI
 
-        st.subheader("⚠ Workflow Errors")
+### Machine Learning
 
-        for err in errors:
+- Sentence Transformers
+- FAISS
+"""
+        )
 
-            st.error(err)
+    with col2:
 
-    else:
+        st.markdown(
+            """
+### Frameworks
 
-        st.success(
+- Streamlit
+- Python
 
-            "Workflow completed successfully with no errors."
+### Libraries
 
+- ReportLab
+- pdfplumber
+- NumPy
+- Pandas
+"""
         )
 
     st.markdown("---")
 
     # ======================================================
-    # Project Information
+    # Future Scope
     # ======================================================
 
-    st.subheader("ℹ About InterviewAce AI")
+    st.subheader("🚀 Future Enhancements")
 
     st.markdown(
-
         """
-**InterviewAce AI** is an AI-powered interview preparation platform that combines:
+✔ Flutter Mobile Application
 
-- 🤖 LangGraph Multi-Agent Workflow
-- 🧠 LangChain + Gemini
-- 📚 Retrieval-Augmented Generation (RAG)
-- 🔍 FAISS Vector Database
-- 📄 ATS Resume Optimization
-- 📈 Skill Gap Analysis
-- 👨‍💼 AI Career Coaching
-- 🎯 Interview Question Generation
-- 🎙 Voice & Text Answer Evaluation
-- 📑 Automated PDF Report Generation
+✔ FastAPI Backend
 
-Designed to help candidates improve resumes, prepare for interviews, and receive AI-driven feedback.
+✔ User Authentication
+
+✔ Cloud Deployment
+
+✔ LinkedIn Profile Analysis
+
+✔ Coding Interview Module
+
+✔ Speech-to-Text Evaluation
+
+✔ Multilingual Interview Support
+
+✔ Resume Version History
+
+✔ AI Career Dashboard
 """
     )
 
     st.markdown("---")
 
-    st.success("🎉 InterviewAce AI Analysis Completed Successfully!")
+    # ======================================================
+    # Footer
+    # ======================================================
+
+    st.success(
+        "🎉 Thank you for using InterviewAce AI!"
+    )
+
+    st.caption(
+        "Built using Streamlit • LangGraph • LangChain • Gemini • FAISS • Sentence Transformers"
+    )
